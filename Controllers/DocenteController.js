@@ -119,6 +119,10 @@ exports.logoutDocente = {
   }
 }
 exports.agregarLaboratorio = {
+  auth:{
+    mode:'required',
+    strategy:'session',
+  },
   handler: function(request,reply){
     var sqlrequest = new sql.Request(connection);
     sqlrequest.input('id',sql.NVarChar(128),request.payload.id);
@@ -133,6 +137,45 @@ exports.agregarLaboratorio = {
       }
       console.log('added correrctly');
       return reply('added correctly');
+    });
+  }
+}
+exports.getLaboratorio = {
+  auth:{
+    mode:'required',
+    strategy:'session'
+  },
+  handler: function(request,reply){
+    var sqlrequest = new sql.Request(connection);
+    sqlrequest.input('id',sql.NVarChar(128),request.params.id);
+    sqlrequest.input('Nombre',sql.NVarChar(50),request.payload.Nombre);
+    sqlrequest.input('Descripcion',sql.NVarChar(50),request.payload.Descripcion);
+    sqlrequest.input('Ubicacion',sql.NVarChar(50),request.payload.Ubicacion);
+    sqlrequest.input('Capacidad',sql.NVarChar(50),request.payload.Capacidad);
+    sqlrequest.execute('sp_getLaboratorio',function(err,recordset,returnValue,affectedRows){
+      if(err){
+        console.log(err);
+        return reply(boom.notAcceptable(err));
+      }
+      console.log(recordset);
+      return reply(recordset);
+    });
+  }
+}
+exports.getLaboratorios = {
+  auth:{
+    mode:'required',
+    strategy:'session'
+  },
+  handler: function(request,reply){
+    var sqlrequest = new sql.Request(connection);
+    sqlrequest.execute('sp_getLaboratorios',function(err,recordset,returnValue,affectedRows){
+      if(err){
+        console.log(err);
+        return reply(boom.notAcceptable(err));
+      }
+      console.log(recordset[0]);
+      return reply(recordset[0]);
     });
   }
 }
