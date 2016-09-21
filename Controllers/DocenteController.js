@@ -23,7 +23,7 @@ connection.connect(function(err){
     console.log("connect to db succesfull");
   }
 });
-var sqlrequest = new sql.Request(connection);
+
 
 
 /*
@@ -35,11 +35,12 @@ exports.storedProcedureExample = {
     sqlrequest.execute('sp_bdI_ejemplo1',function(err, recordset, returnValue, affectedRows){
     if(err){
       console.log(err);
+      return reply(err);
     }else{
       var x = "recordset " + recordset + "\n"
       + "returnValue: " + returnValue + "\n"
       + "affectedRows: " + affectedRows;
-      reply(recordset);
+      return reply(recordset);
     }
     });
   }
@@ -55,6 +56,7 @@ exports.loginDocente = {
   handler: function(request,reply){
     var password = String(SHA3(request.payload.Password));
     var username = request.payload.Email;
+    var sqlrequest = new sql.Request(connection);
     sqlrequest.input('Email',sql.NVarChar(50),username);
     sqlrequest.input('Password',sql.NChar(128),password);
     sqlrequest.output('Accepted',sql.Bit);
@@ -88,7 +90,7 @@ exports.registrarDocente = {
     }
   },
   handler: function(request,reply){
-    
+    var sqlrequest = new sql.Request(connection);
     sqlrequest.input('Email',sql.NVarChar(30),request.payload.Email);
     sqlrequest.input('Nombre',sql.NVarChar(50),request.payload.Nombre);
     sqlrequest.input('Apellido',sql.NVarChar(50),request.payload.Apellido);
@@ -115,4 +117,22 @@ exports.logoutDocente = {
     request.cookieAuth.clear();
     return reply('Logout Successful!');
   }
-};
+}
+exports.agregarLaboratorio = {
+  handler: function(request,reply){
+    var sqlrequest = new sql.Request(connection);
+    sqlrequest.input('id',sql.NVarChar(128),request.payload.id);
+    sqlrequest.input('Nombre',sql.NVarChar(50),request.payload.Nombre);
+    sqlrequest.input('Descripcion',sql.NVarChar(50),request.payload.Descripcion);
+    sqlrequest.input('Ubicacion',sql.NVarChar(50),request.payload.Ubicacion);
+    sqlrequest.input('Capacidad',sql.NVarChar(50),request.payload.Capacidad);
+    sqlrequest.execute('sp_agregarLaboratorio',function(err, recordset, returnValue, affectedRows){
+      if(err){
+        console.log(err);
+        return reply(boom.notAcceptable(err));
+      }
+      console.log('added correrctly');
+      return reply('added correctly');
+    });
+  }
+}
