@@ -179,3 +179,21 @@ exports.getLaboratorios = {
     });
   }
 }
+exports.deleteLaboratorio = {
+  auth:{
+    mode:'required',
+    strategy:'session'
+  },
+  handler: function(request, reply){
+    var sqlrequest = new sql.Request(connection);
+    sqlrequest.input('id',sql.NVarChar(128),request.params.id);
+    sqlrequest.execute('sp_deleteLaboratorio',function(err,recordset,returnValue,affectedRows){
+      if(err){
+        console.log(err);
+        return reply(boom.notAcceptable(err));
+      }
+      console.log(recordset[0]);
+      return reply(recordset[0]);
+    });
+  }
+}

@@ -5,7 +5,6 @@ exports.endpoints = [{method: 'GET', path: '/', handler: function(request, reply
 	{method: 'POST', path: '/v1/registrarDocente', config: DocenteController.registrarDocente},
 	{method: 'GET', path: '/v1/logoutDocente', config: DocenteController.logoutDocente},
 	{method: 'POST', path: '/v1/agregarLaboratorio', config: DocenteController.agregarLaboratorio},
-	{method: 'GET', path: '/v1/Laboratorios', config: DocenteController.getLaboratorios}/*,
-	{method: 'GET', path: '/v1/Laboratorio/{id}', config: DocenteController.borrarLaboratorio},
-	{method: 'POST', path: '/v1/borrarLaboratorio', config: DocenteController.borrarLaboratorio}*/
+	{method: 'GET', path: '/v1/Laboratorios', config: DocenteController.getLaboratorios},
+	{method: 'DELETE', path: '/v1/borrarLaboratorio/{id}', config: DocenteController.deleteLaboratorio}
 ];
