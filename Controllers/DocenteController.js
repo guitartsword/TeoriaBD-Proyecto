@@ -65,6 +65,7 @@ exports.loginDocente = {
         if(recordset.length > 0){
           console.log(recordset[0][0]);
           console.log(sqlrequest.parameters.Accepted.value);
+          request.cookieAuth.set(recordset[0][0]);
           return reply(recordset[0][0]);
         }
         return reply('Wrong email or password');
@@ -105,3 +106,13 @@ exports.registrarDocente = {
     });
   }
 }
+exports.logoutDocente = {
+  auth: {
+    mode:'required',
+    strategy:'session'
+  },
+  handler: function(request, reply) {
+    request.cookieAuth.clear();
+    return reply('Logout Successful!');
+  }
+};
