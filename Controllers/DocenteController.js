@@ -48,42 +48,27 @@ exports.loginDocente = {
   auth: false,
   validate: {
     payload: {
-      username: joi.string().required(),
-      password: joi.string().min(2).max(200).required()
+      Email: joi.string().required(),
+      Password: joi.string().min(2).max(200).required()
     }
   },
   handler: function(request,reply){
     var password = String(SHA3(request.payload.Password));
     var username = request.payload.Email;
-    sqlrequest.input('Email',sql.NVarChar(20),username);
-    sqlrequest.input('Password',sql.NVarChar(128),password);
-    sqlrequest.output('')
-    sqlrequest.execute('loginDocente',function(err, recordset, returnValue, affectedRows){
+    sqlrequest.input('Email',sql.NVarChar(50),username);
+    sqlrequest.input('Password',sql.NChar(128),password);
+    sqlrequest.output('Accepted',sql.Bit);
+    sqlrequest.execute('sp_loginDocente',function(err, recordset, returnValue, affectedRows){
       if(err){
-        return reply('Error Executing Query');
+        return reply(boom.badData(err),request.payload);
       }else{
         if(recordset.length > 0){
-          request.auth.session.set(recordset[0]);
-          return reply(recordset[0]);
+          console.log(recordset[0][0]);
+          console.log(sqlrequest.parameters.Accepted.value);
+          return reply(recordset[0][0]);
         }
-        return reply('Wrong email or password'));
+        return reply('Wrong email or password');
       }
-    });
-  }
-}
-exports.getProducts = {
-  auth: false/*{
-    mode:'required',
-    strategy:'session',
-    scope: ['admin', 'regular']
-  }*/,
-  handler: function(request,reply){
-    sqlrequest.query('select * from Products P where P.ProductID = 1').then(function(recordset) {
-      reply(recordset[0]);
-    }).catch(function(err) {
-      console.log("QUERY ERROR");
-      console.log(err);
-    // ... query error checks
     });
   }
 }
@@ -97,22 +82,24 @@ exports.registrarDocente = {
       Apellido: joi.string().required(),
       Departamento: joi.string().required(),
       Telefono: joi.number().integer().required(),
-      Campus: joi.string().required()
+      Campus: joi.string().required(),
+      isAdmin: joi.boolean().required()
     }
   },
   handler: function(request,reply){
     
-    sqlrequest.input('Email',sql.NChar(30),request.payload.Email);
-    sqlrequest.input('Nombre',sql.NChar(15),request.payload.Nombre);
-    sqlrequest.input('Apellido',sql.NChar(15),request.payload.Apellido);
+    sqlrequest.input('Email',sql.NVarChar(30),request.payload.Email);
+    sqlrequest.input('Nombre',sql.NVarChar(50),request.payload.Nombre);
+    sqlrequest.input('Apellido',sql.NVarChar(50),request.payload.Apellido);
     sqlrequest.input('Telefono',sql.Int,request.payload.Telefono);
-    sqlrequest.input('Departamento',sql.NChar(15),request.payload.Departamento);
-    sqlrequest.input('Campus',sql.NChar(15),request.payload.Campus);
+    sqlrequest.input('Departamento',sql.NVarChar(50),request.payload.Departamento);
+    sqlrequest.input('Campus',sql.NVarChar(50),request.payload.Campus);
     sqlrequest.input('Password',sql.NChar(128),SHA3(request.payload.Password));
+    sqlrequest.input('isAdmin',sql.Bit,request.payload.isAdmin);
     sqlrequest.execute('sp_registrarDocente',function(err, recordset, returnValue, affectedRows){
       if(err){
-        return reply(boom.notAcceptable('Error Executing Query'));
         console.log(err);
+        return reply(boom.notAcceptable(err));
       }
       return reply('registered');
     });
