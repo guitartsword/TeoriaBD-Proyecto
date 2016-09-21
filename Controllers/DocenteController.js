@@ -4,7 +4,7 @@ var boom = require('boom');
 var SHA3 = require("crypto-js/sha3");
 
 
-var dbName = 'NORTHWND'
+var dbName = 'Proyecto1'
 var config = {
   user: 'user1',
   password: "proyecto1",
@@ -29,7 +29,6 @@ var sqlrequest = new sql.Request(connection);
 /*
 //THE CORE BACKEND IS HERE :3
 */
-console.log("exports");
 exports.storedProcedureExample = {
   auth: false,
   handler: function(request,reply){
@@ -54,19 +53,20 @@ exports.loginDocente = {
     }
   },
   handler: function(request,reply){
-    var password = String(SHA3(request.payload.password));
-    var username = request.payload.username;
-    sqlrequest.input('username',sql.NVarChar(20),username);
-    sqlrequest.input('password',sql.NVarChar(128),password);
+    var password = String(SHA3(request.payload.Password));
+    var username = request.payload.Email;
+    sqlrequest.input('Email',sql.NVarChar(20),username);
+    sqlrequest.input('Password',sql.NVarChar(128),password);
+    sqlrequest.output('')
     sqlrequest.execute('loginDocente',function(err, recordset, returnValue, affectedRows){
       if(err){
-        return reply(boom.notAcceptable('Error Executing Query'));
+        return reply('Error Executing Query');
       }else{
         if(recordset.length > 0){
           request.auth.session.set(recordset[0]);
           return reply(recordset[0]);
         }
-        return reply(boom.unauthorized('Wrong email or password'));
+        return reply('Wrong email or password'));
       }
     });
   }
@@ -84,6 +84,37 @@ exports.getProducts = {
       console.log("QUERY ERROR");
       console.log(err);
     // ... query error checks
+    });
+  }
+}
+exports.registrarDocente = {
+  auth: false,
+  validate:{
+    payload:{
+      Email: joi.string().required(),
+      Password: joi.string().min(6).max(30).required(),
+      Nombre: joi.string().required(),
+      Apellido: joi.string().required(),
+      Departamento: joi.string().required(),
+      Telefono: joi.number().integer().required(),
+      Campus: joi.string().required()
+    }
+  },
+  handler: function(request,reply){
+    
+    sqlrequest.input('Email',sql.NChar(30),request.payload.Email);
+    sqlrequest.input('Nombre',sql.NChar(15),request.payload.Nombre);
+    sqlrequest.input('Apellido',sql.NChar(15),request.payload.Apellido);
+    sqlrequest.input('Telefono',sql.Int,request.payload.Telefono);
+    sqlrequest.input('Departamento',sql.NChar(15),request.payload.Departamento);
+    sqlrequest.input('Campus',sql.NChar(15),request.payload.Campus);
+    sqlrequest.input('Password',sql.NChar(128),SHA3(request.payload.Password));
+    sqlrequest.execute('sp_registrarDocente',function(err, recordset, returnValue, affectedRows){
+      if(err){
+        return reply(boom.notAcceptable('Error Executing Query'));
+        console.log(err);
+      }
+      return reply('registered');
     });
   }
 }
