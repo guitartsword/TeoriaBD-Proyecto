@@ -60,10 +60,10 @@ exports.loginDocente = {
     sqlrequest.output('Accepted',sql.Bit);
     sqlrequest.execute('sp_loginDocente',function(err, recordset, returnValue, affectedRows){
       if(err){
+        console.log(err);
         return reply(boom.badData(err),request.payload);
       }else{
         if(recordset.length > 0){
-          console.log(recordset[0][0]);
           console.log(sqlrequest.parameters.Accepted.value);
           request.cookieAuth.set(recordset[0][0]);
           return reply(recordset[0][0]);
