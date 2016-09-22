@@ -70,16 +70,9 @@ exports.loginDocente = {
         console.log(err);
         return reply(boom.badData(err),request.payload);
       }else{
-        console.log("retVal: " + returnValue);
-        console.log("affrows: " + affectedRows);
-        console.log("length " + recordset.length);
         if(recordset.length > 0){
-          console.log(sqlrequest.parameters.Accepted.value);
-          console.log(recordset[0][0]);
-          if(recordset[0][0].isAdmin)
-            request.cookieAuth.set(recordset[0][0]);
-          else
-            request.cookieAuth.set(recordset[0][0]);
+          request.cookieAuth.set(recordset[0][0]);
+          console.log("user login");
           return reply(recordset[0][0]);
         }
         return reply('Wrong email or password');
@@ -244,6 +237,34 @@ exports.agregarReserva = {
         return reply(boom.notAcceptable(err));
       }
       console.log(recordset[0]);
+      return reply(recordset[0]);
+    });
+  }
+}
+exports.borrarDocente = {
+  handler: function(request, reply){
+    var sqlrequest = new sql.Request(connection);
+    console.log(request.params);
+    sqlrequest.input('Email',sql.NVarChar(50),request.params.id);
+    sqlrequest.execute('sp_borrarDocente', function(err,recordset,returnValue,affectedRows){
+      if(err){
+        console.log(err);
+        return reply(boom.notAcceptable(err));
+      }
+      console.log('docente ' + recordset[0] + 'borrado');
+      return reply('docente ' + recordset[0] + 'borrado');
+    });
+  }
+}
+exports.getDocentes = {
+  handler: function(request, reply){
+    var sqlrequest = new sql.Request(connection);
+    sqlrequest.execute('sp_getDocentes',function(err, recordset,returnValue,affectedRows){
+      if(err){
+        console.log(err);
+        return reply(boom.notAcceptable(err));
+      }
+      console.log("getting Docentes");
       return reply(recordset[0]);
     });
   }

@@ -8,5 +8,8 @@ exports.endpoints = [{method: 'GET', path: '/', handler: function(request, reply
 	{method: 'GET', path: '/v1/Laboratorios', config: DocenteController.getLaboratorios},
 	{method: 'DELETE', path: '/v1/borrarLaboratorio/{id}', config: DocenteController.deleteLaboratorio},
 	{method: 'GET', path: '/v1/Reserva/{id}', config: DocenteController.reservacionesLabs},
-	{method: 'POST', path: '/v1/agregarReserva', config: DocenteController.agregarReserva}
+	{method: 'POST', path: '/v1/agregarReserva', config: DocenteController.agregarReserva},
+	{method: 'GET', path: '/v1/Usuarios', config: DocenteController.getDocentes},
+	{method: 'DELETE', path: '/v1/Usuario/{id}', config: DocenteController.borrarDocente}
+
 ];
