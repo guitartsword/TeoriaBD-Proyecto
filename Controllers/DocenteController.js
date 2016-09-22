@@ -30,7 +30,6 @@ connection.connect(function(err){
 //THE CORE BACKEND IS HERE :3
 */
 exports.storedProcedureExample = {
-  auth: false,
   handler: function(request,reply){
     sqlrequest.execute('sp_bdI_ejemplo1',function(err, recordset, returnValue, affectedRows){
     if(err){
@@ -46,7 +45,6 @@ exports.storedProcedureExample = {
   }
 }
 exports.loginDocente = {
-  auth: false,
   validate: {
     payload: {
       Email: joi.string().required(),
@@ -57,17 +55,31 @@ exports.loginDocente = {
     var password = String(SHA3(request.payload.Password));
     var username = request.payload.Email;
     var sqlrequest = new sql.Request(connection);
+    /*sqlrequest.query("select * from dbo.Profesor P where p.Email = '" + username + "'").then(function(recorset){
+      console.log(recorset);
+      return reply(recorset[0]);
+    }).catch(function(err){
+      console.log(err);
+      return reply(err);
+    });*/
     sqlrequest.input('Email',sql.NVarChar(50),username);
-    sqlrequest.input('Password',sql.NChar(128),password);
+    sqlrequest.input('Password',sql.NVarChar(128),password);
     sqlrequest.output('Accepted',sql.Bit);
     sqlrequest.execute('sp_loginDocente',function(err, recordset, returnValue, affectedRows){
       if(err){
         console.log(err);
         return reply(boom.badData(err),request.payload);
       }else{
+        console.log("retVal: " + returnValue);
+        console.log("affrows: " + affectedRows);
+        console.log("length " + recordset.length);
         if(recordset.length > 0){
           console.log(sqlrequest.parameters.Accepted.value);
-          request.cookieAuth.set(recordset[0][0]);
+          console.log(recordset[0][0]);
+          if(recordset[0][0].isAdmin)
+            request.cookieAuth.set(recordset[0][0]);
+          else
+            request.cookieAuth.set(recordset[0][0]);
           return reply(recordset[0][0]);
         }
         return reply('Wrong email or password');
@@ -76,7 +88,6 @@ exports.loginDocente = {
   }
 }
 exports.registrarDocente = {
-  auth: false,
   validate:{
     payload:{
       Email: joi.string().required(),
@@ -109,20 +120,20 @@ exports.registrarDocente = {
   }
 }
 exports.logoutDocente = {
-  auth: {
+  /*auth:{
     mode:'required',
     strategy:'session'
-  },
+  },*/
   handler: function(request, reply) {
     request.cookieAuth.clear();
     return reply('Logout Successful!');
   }
 }
 exports.agregarLaboratorio = {
-  auth:{
+  /*auth:{
     mode:'required',
-    strategy:'session',
-  },
+    strategy:'session'
+  },*/
   handler: function(request,reply){
     var sqlrequest = new sql.Request(connection);
     sqlrequest.input('id',sql.NVarChar(128),request.payload.id);
@@ -141,10 +152,10 @@ exports.agregarLaboratorio = {
   }
 }
 exports.getLaboratorio = {
-  auth:{
+  /*auth:{
     mode:'required',
     strategy:'session'
-  },
+  },*/
   handler: function(request,reply){
     var sqlrequest = new sql.Request(connection);
     sqlrequest.input('id',sql.NVarChar(128),request.params.id);
@@ -163,10 +174,11 @@ exports.getLaboratorio = {
   }
 }
 exports.getLaboratorios = {
-  auth:{
+  auth: false/*{
     mode:'required',
-    strategy:'session'
-  },
+    strategy:'session',
+    scope: ['Admin','Regular']
+  }*/,
   handler: function(request,reply){
     var sqlrequest = new sql.Request(connection);
     sqlrequest.execute('sp_getLaboratorios',function(err,recordset,returnValue,affectedRows){
@@ -174,7 +186,6 @@ exports.getLaboratorios = {
         console.log(err);
         return reply(boom.notAcceptable(err));
       }
-      console.log(recordset[0]);
       return reply(recordset[0]);
     });
   }
@@ -188,6 +199,46 @@ exports.deleteLaboratorio = {
     var sqlrequest = new sql.Request(connection);
     sqlrequest.input('id',sql.NVarChar(128),request.params.id);
     sqlrequest.execute('sp_deleteLaboratorio',function(err,recordset,returnValue,affectedRows){
+      if(err){
+        console.log(err);
+        return reply(boom.notAcceptable(err));
+      }
+      console.log(recordset[0]);
+      return reply(recordset[0]);
+    });
+  }
+}
+exports.reservacionesLabs = {
+  /*auth:{
+    mode:'required',
+    strategy:'session'
+  },*/
+  handler: function(request, reply){
+    var sqlrequest = new sql.Request(connection);
+    sqlrequest.input('labID',sql.NVarChar(128),request.params.id);
+    sqlrequest.execute('TodasLasReservaciones',function(err,recordset,returnValue,affectedRows){
+      if(err){
+        console.log(err);
+        return reply(boom.notAcceptable(err));
+      }
+      console.log(recordset[0]);
+      return reply(recordset[0]);
+    });
+  }
+}
+exports.agregarReserva = {
+  /*auth:{
+    mode:'required',
+    strategy:'session'
+  },*/
+  handler: function(request, reply){
+    var sqlrequest = new sql.Request(connection);
+    sqlrequest.input('idLab',sql.NVarChar(50),request.payload.idLab);
+    sqlrequest.input('Email',sql.NVarChar(50),request.payload.Email);
+    sqlrequest.input('Fecha_I',sql.Datetime,request.payload.Fecha_I);
+    sqlrequest.input('Fecha_F',sql.Datetime,request.payload.Fecha_F);
+    sqlrequest.input('Descripcion',sql.Datetime,request.payload.Descripcion);
+    sqlrequest.execute('TodasLasReservaciones',function(err,recordset,returnValue,affectedRows){
       if(err){
         console.log(err);
         return reply(boom.notAcceptable(err));

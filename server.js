@@ -2,7 +2,6 @@ var hapi = require('hapi');
 var routes = require('./routes');
 var inert = require('inert');
 var auth = require('hapi-auth-cookie');
-
 var server = new hapi.Server();
 server.connection({
     port: ~~process.env.PORT || 8000,
@@ -18,7 +17,8 @@ server.register([inert, auth], function(err){
     password: 'calendarencryptedpasswordforencryption',
     cookie: 'calendarcookies',
     ttl: 24 * 60 * 60 * 1000, // Set session to 1 day
-    isSecure: false
+    isSecure: true,
+    isHttpOnly: false
   });
 
 	server.route(routes.endpoints);
