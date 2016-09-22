@@ -191,10 +191,10 @@ exports.getLaboratorios = {
   }
 }
 exports.deleteLaboratorio = {
-  auth:{
+  /*auth:{
     mode:'required',
     strategy:'session'
-  },
+  },*/
   handler: function(request, reply){
     var sqlrequest = new sql.Request(connection);
     sqlrequest.input('id',sql.NVarChar(128),request.params.id);
